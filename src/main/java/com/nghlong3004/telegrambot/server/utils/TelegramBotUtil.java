@@ -55,25 +55,19 @@ public class TelegramBotUtil implements LongPollingSingleThreadUpdateConsumer {
   }
   
   private static final Logger LOGGER = Logger.getLogger(TelegramBotUtil.class);
-  // Setting logger
   static {
     try {
-      // Create Layout out object
       PatternLayout layout = new PatternLayout();
       layout.setConversionPattern("[%-5l] %d{yyyy-MM-dd HH:mm:ss.SSS} %c{1}:%L - %m%n");
-      // Create Appender object having layout object
       ConsoleAppender appender = new ConsoleAppender(layout);
       appender.setName("STDOUT");
-      // Add Appender object to Logger object
       LOGGER.addAppender(appender);
-      // Logger level to retrieve log message
       LOGGER.setLevel(Level.DEBUG);
-      // Logger info
-      LOGGER.info("DatabaseExecutor::Log4j Setup ready");
+      LOGGER.info("TelegramBotUtil::Log4j Setup ready");
 
     } catch (Exception e) {
       e.printStackTrace();
-      LOGGER.fatal("DatabaseExecutor::Problem while setting up Log4j");
+      LOGGER.fatal("TelegramBotUtil::Problem while setting up Log4j");
     }
   }
 
