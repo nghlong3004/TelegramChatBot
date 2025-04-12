@@ -11,13 +11,16 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+import com.nghlong3004.telegrambot.server.service.APIService;
 
 public class TelegramBotUtil implements LongPollingSingleThreadUpdateConsumer {
   
   private final TelegramClient telegramClient;
+  private final APIService apiService;
 
   public TelegramBotUtil(String token) {
     telegramClient = new OkHttpTelegramClient(token);
+    apiService = new APIService();
   }
 
   @Override
@@ -29,13 +32,14 @@ public class TelegramBotUtil implements LongPollingSingleThreadUpdateConsumer {
       long userId = message.getChat().getId();
       String firstnameUser = message.getChat().getFirstName();
       String lastnameUser = message.getChat().getLastName();
-
+      String replyMessage = apiService.askOpenAi(text);
+      
       SendMessage response = SendMessage
                             .builder()
-                            .text(text)
+                            .text(replyMessage)
                             .chatId(chatId)
                             .build();
-      log(firstnameUser, lastnameUser, String.valueOf(userId), text, text);
+      log(firstnameUser, lastnameUser, String.valueOf(userId), text, replyMessage);
       
       try {
         telegramClient.execute(response);
