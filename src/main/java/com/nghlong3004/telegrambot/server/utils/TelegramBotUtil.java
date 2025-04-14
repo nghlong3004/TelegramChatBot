@@ -1,9 +1,6 @@
 package com.nghlong3004.telegrambot.server.utils;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -12,67 +9,53 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 import com.nghlong3004.telegrambot.server.service.APIService;
+import com.nghlong3004.telegrambot.server.service.DatabaseService;
 
 public class TelegramBotUtil implements LongPollingSingleThreadUpdateConsumer {
-  
-  private final TelegramClient telegramClient;
-  private final APIService apiService;
+  private static final Logger LOGGER = Logger.getLogger(TelegramBotUtil.class);
+  private final TelegramClient TELEGRAM_CLIENT;
+  private final APIService API_SERVICE;
+  private final DatabaseService DATABASE_SERVICE;
 
-  public TelegramBotUtil(String token) {
-    telegramClient = new OkHttpTelegramClient(token);
-    apiService = new APIService();
+  protected TelegramBotUtil(String token) {
+    TELEGRAM_CLIENT = new OkHttpTelegramClient(token);
+    API_SERVICE = new APIService();
+    DATABASE_SERVICE = new DatabaseService();
   }
 
   @Override
   public void consume(Update update) {
-    if (update.hasMessage()) {
-      Message message = update.getMessage();
-      String text = message.getText();
-      long chatId = message.getChatId();
-      long userId = message.getChat().getId();
-      String firstnameUser = message.getChat().getFirstName();
-      String lastnameUser = message.getChat().getLastName();
-      String replyMessage = apiService.askOpenAi(text);
-      
-      SendMessage response = SendMessage
-                            .builder()
-                            .text(replyMessage)
-                            .chatId(chatId)
-                            .build();
-      log(firstnameUser, lastnameUser, String.valueOf(userId), text, replyMessage);
-      
-      try {
-        telegramClient.execute(response);
-      } catch (TelegramApiException e) {
-        LOGGER.debug(e.getMessage());
-      }
-      
+    if (update.hasMessage() && update.getMessage().hasText()) {
+      processIncomingMessage(update.getMessage());
     }
-
   }
 
-  private void log(String firstName, String lastName, String userId, String txt,
-      String botAnswer) {
-    LOGGER.info("Message from " + firstName + " " + lastName + ". (id = " + userId
-        + ") \n Text - " + txt);
-    LOGGER.info("Bot answer: \n Text - " + botAnswer);
-  }
-  
-  private static final Logger LOGGER = Logger.getLogger(TelegramBotUtil.class);
-  static {
+  private void processIncomingMessage(Message message) {
+    String userMessage = message.getText();
+    long chatId = message.getChatId();
+    long telegramId = message.getChat().getId();
+    String firstName = message.getChat().getFirstName();
+    String lastName = message.getChat().getLastName();
+    String fullName =
+        (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
+
+    LOGGER.info("Receive messages from " + fullName + " (" + telegramId + "): " + userMessage);
+
+    DATABASE_SERVICE.insertUserIfNotExists(fullName.trim(), telegramId);
+
+    String botReply = API_SERVICE.askOpenAi(userMessage);
+
+    DATABASE_SERVICE.insertUserMessage(telegramId, userMessage, botReply);
+
+    SendMessage response = SendMessage.builder().chatId(chatId).text(botReply).build();
+
     try {
-      PatternLayout layout = new PatternLayout();
-      layout.setConversionPattern("[%-5l] %d{yyyy-MM-dd HH:mm:ss.SSS} %c{1}:%L - %m%n");
-      ConsoleAppender appender = new ConsoleAppender(layout);
-      appender.setName("STDOUT");
-      LOGGER.addAppender(appender);
-      LOGGER.setLevel(Level.DEBUG);
-      LOGGER.info("TelegramBotUtil::Log4j Setup ready");
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      LOGGER.fatal("TelegramBotUtil::Problem while setting up Log4j");
+      TELEGRAM_CLIENT.execute(response);
+      LOGGER.info("Feedback sent to :" + telegramId);
+    } catch (TelegramApiException e) {
+      LOGGER.error(e);
     }
+
   }
 
 }

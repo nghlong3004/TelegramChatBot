@@ -15,7 +15,7 @@ public class APIOpenAIUtil {
   
   private String apikey;
   
-  public APIOpenAIUtil(String apikey) {
+  protected APIOpenAIUtil(String apikey) {
     this.apikey = apikey;
   }
   

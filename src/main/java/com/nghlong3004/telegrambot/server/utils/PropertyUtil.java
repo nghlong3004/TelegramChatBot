@@ -2,16 +2,13 @@ package com.nghlong3004.telegrambot.server.utils;
 
 import java.io.InputStream;
 import java.util.Properties;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 
 public class PropertyUtil {
-
+  private static final Logger LOGGER = Logger.getLogger(PropertyUtil.class);
   private Properties properties;
 
-  public PropertyUtil() {
+  protected PropertyUtil() {
     properties = new Properties();
     try (InputStream input =
         getClass().getResourceAsStream("/com/nghlong3004/telegrambot/config/config.properties")) {
@@ -31,7 +28,7 @@ public class PropertyUtil {
     return getPropertyValue("openai.api_key");
   }
 
-  // github 
+  // github
   public String getGithubApiKey() {
     return getPropertyValue("github.api_key");
   }
@@ -66,22 +63,6 @@ public class PropertyUtil {
   private String getPropertyValue(String property) {
     LOGGER.info("Call: " + property);
     return properties.getProperty(property);
-  }
-
-  private static final Logger LOGGER = Logger.getLogger(PropertyUtil.class);
-  static {
-    try {
-      PatternLayout layout = new PatternLayout();
-      layout.setConversionPattern("[%-5l] %d{yyyy-MM-dd HH:mm:ss.SSS} %c{1}:%L - %m%n");
-      ConsoleAppender appender = new ConsoleAppender(layout);
-      appender.setName("STDOUT");
-      LOGGER.addAppender(appender);
-      LOGGER.setLevel(Level.DEBUG);
-      LOGGER.info("PropertyUtil::Log4j Setup ready");
-    } catch (Exception e) {
-      e.printStackTrace();
-      LOGGER.fatal("PropertyUtil::Problem while setting up Log4j");
-    }
   }
 
 }
