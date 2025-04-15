@@ -14,14 +14,14 @@ public class DatabaseUtil {
   protected DatabaseUtil(DatabaseConfiguration databaseConfiguration) {
     DATABASE_CONFIGURATION = databaseConfiguration;
     try {
-      Class.forName("org.postgresql.Driver");
+      Class.forName(DATABASE_CONFIGURATION.getDbClassName());
     } catch (ClassNotFoundException e) {
-      LOGGER.debug(e.getMessage());
+      LOGGER.debug("[DB] " + e.getMessage());
     }
   }
 
   public Connection getConnection() throws SQLException {
-    LOGGER.info("Connection database: " + DATABASE_CONFIGURATION.getDbUsername());
+    LOGGER.info("[DB] Connection database: " + DATABASE_CONFIGURATION.getDbUsername());
     return DriverManager.getConnection(DATABASE_CONFIGURATION.getDbUrl(),
         DATABASE_CONFIGURATION.getDbUsername(), DATABASE_CONFIGURATION.getDbPassword());
   }

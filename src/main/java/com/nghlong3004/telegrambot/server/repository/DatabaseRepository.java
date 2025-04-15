@@ -12,6 +12,10 @@ public class DatabaseRepository {
       "INSERT INTO telegram.user_messages (user_id, user_message, bot_reply) VALUES (?, ?, ?)";
 
   public static final String INSERT_SERVER_HISTORY =
-      "INSERT INTO telegram.server_history (server_response) VALUES (?)";
+      "INSERT INTO telegram.server_history (server_response, coin_type) VALUES (?, ?)";
+  public static final String SELECT_SERVER_HISTORY_BY_KEYWORD =
+      "SELECT server_response, timestamp FROM telegram.server_history " + "WHERE coin_type ILIKE ? "
+          + "AND timestamp >= CURRENT_DATE " + "AND timestamp < CURRENT_DATE + INTERVAL '1 day' "
+          + "ORDER BY timestamp DESC";
 
 }

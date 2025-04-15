@@ -9,6 +9,16 @@
 	<description>Telegram Chatbot analysis signals BTC</description>
 
 	<dependencies>
+		<dependency>
+			<groupId>io.github.binance</groupId>
+			<artifactId>binance-connector-java</artifactId>
+			<version>3.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.7.4</version>
+		</dependency>
 		<!-- Azure AI Inference SDK -->
 		<dependency>
 			<groupId>com.azure</groupId>
